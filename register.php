@@ -11,12 +11,15 @@
         <div class="box form-box">
             <?php
                 include("php/config.php");
+                
                 if(isset($_POST['submit']))
                     {
                         $username = $_POST['username'];
                         $email = $_POST['email'];
                         $age = $_POST['age'];
                         $password = $_POST['password'];
+
+                        $hashed_password = password_hash($password,PASSWORD_DEFAULT);
 
                         //verifying the unique email
                         $verify_query = mysqli_query($con, "SELECT Email FROM users WHERE Email = '$email'");
@@ -29,7 +32,7 @@
                         }
                         else
                             {
-                                mysqli_query($con, "INSERT INTO users(Username, Email, Age, Password) VALUES('$username','$email','$age','$password')") or die("Error Ocurred");  
+                                mysqli_query($con, "INSERT INTO users(Username, Email, Age, Password) VALUES('$username','$email','$age','$hashed_password')") or die("Error Ocurred");  
                                 echo "<div class= 'message'>
                                 <p>Registered successfully!</p>
                                 </div> <br>";

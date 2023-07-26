@@ -1,5 +1,6 @@
 <?php
 session_start();
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -21,26 +22,58 @@ session_start();
                     $email = mysqli_real_escape_string($con, $_POST['email']);
                     $password = mysqli_real_escape_string($con, $_POST['password']);
                     
-                    $result = mysqli_query($con,"SELECT * FROM users WHERE Email='$email' AND Password = '$password'") or die("Select Error");
-                    $row = mysqli_fetch_assoc($result);
-                    if(is_array($row) && !empty($row))
+                    //retrieving the hashed password for the given email
+                    $sql = "SELECT * FROM users WHERE Email = '$email'";
+                    $sql_result = mysqli_query($con, $sql);
+                    
+
+                    if($sql_result)
+                    {
+                        if(mysqli_num_rows($sql_result) > 0)
                         {
-                            $_SESSION['valid'] = $row['Email'];
-                            $_SESSION['username'] = $row['Usename'];
-                            $_SESSION['age'] = $row['Age'];
-                            $_SESSION['id'] = $row['Id'];
+                            $_row = mysqli_fetch_assoc($sql_result);
+                            $hashed_password = $_row['Password'];
+                            if(password_verify($password, $hashed_password))
+                            {
+                                //login
+                                $result = mysqli_query($con,"SELECT * FROM users WHERE Email='$email' AND Password = '$hashed_password'") or die("Select Error!");
+                                $row = mysqli_fetch_assoc($result);
+                                if(is_array($row) && !empty($row))
+                                    {
+                                        $_SESSION['valid'] = $row['Email'];
+                                        $_SESSION['username'] = $row['Username'];
+                                        $_SESSION['age'] = $row['Age'];
+                                        $_SESSION['id'] = $row['Id'];
+                                    }
+                                else
+                                    {
+                                        echo "<div class='message'>
+                                                    <p>Wrong Username or Password</p>
+                                                </div> <br>";
+                                        echo "<a href='index.php'><button class='btn'>Go Back</button></a>";
+                                    }
+                                if(isset($_SESSION['valid']))
+                                    {
+                                        header("Location: home.php");
+                                    } 
+
+                            }
+                            else
+                            {
+                                echo "Incorect Password";
+                            }
                         }
+                        else
+                        {
+                            echo "User not found";
+                        }
+
+                    }
                     else
-                        {
-                            echo "<div class='message'>
-                                        <p>Wrong Username or Password</p>
-                                    </div> <br>";
-                            echo "<a href='index.php'><button class='btn'>Go Back</button></a>";
-                        }
-                    if(isset($_SESSION['valid']))
-                        {
-                            header("Location: home.php");
-                        } 
+                    {
+                        echo "Error executing query";
+                    }
+                    
                 } 
                 else {
 
